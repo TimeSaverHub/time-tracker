@@ -1,11 +1,12 @@
 'use client'
 
 import * as React from 'react'
-import { signIn } from 'next-auth/react'
+import { signInWithEmailAndPassword } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Logo } from '../../../components/ui/logo'
-import { Alert, AlertDescription } from "../../../components/ui/alert"
+import { auth } from '@/lib/firebase'
+import { Logo } from '@/components/ui/logo'
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -15,37 +16,34 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = React.useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault() // Prevent form from submitting normally
+    e.preventDefault()
     setIsLoading(true)
     setError(null)
 
     try {
-      console.log('[LOGIN] Attempting login...')
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-        callbackUrl: '/dashboard'
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      
+      // Get the ID token
+      const idToken = await userCredential.user.getIdToken()
+      
+      // Send token to backend to create session cookie
+      const response = await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ idToken }),
       })
 
-      console.log('[LOGIN] Result:', result)
-
-      if (!result) {
-        throw new Error('Authentication failed')
+      if (!response.ok) {
+        throw new Error('Failed to create session')
       }
 
-      if (result.error) {
-        setError(result.error)
-        return
-      }
-
-      if (result.ok) {
-        router.push('/dashboard')
-        router.refresh()
-      }
+      router.push('/dashboard')
+      router.refresh()
     } catch (error) {
-      console.error('[LOGIN] Error:', error)
-      setError('An unexpected error occurred')
+      console.error('Login error:', error)
+      setError('Invalid email or password')
     } finally {
       setIsLoading(false)
     }
@@ -65,12 +63,7 @@ export default function LoginPage() {
             Track your time, boost your productivity
           </p>
         </div>
-        <form 
-          onSubmit={handleSubmit} 
-          className="mt-8 space-y-6"
-          method="POST" // Add method POST
-        >
-          <input type="hidden" name="remember" value="true" />
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="email" className="sr-only">

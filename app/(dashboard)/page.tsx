@@ -1,9 +1,18 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { TimeTracker } from '@/components/time-tracker/time-tracker'
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Welcome back!</h1>
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Track your time and boost your productivity
+          </p>
+        </div>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
@@ -11,7 +20,7 @@ export default function DashboardPage() {
             <CardDescription>Your tracked time this month</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">24.5 hours</p>
+            <p className="text-2xl font-bold">0 hours</p>
           </CardContent>
         </Card>
         <Card>
@@ -20,7 +29,7 @@ export default function DashboardPage() {
             <CardDescription>Projects you're tracking time for</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">3 projects</p>
+            <p className="text-2xl font-bold">0 projects</p>
           </CardContent>
         </Card>
         <Card>
@@ -33,6 +42,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <TimeTracker />
     </div>
   )
 }

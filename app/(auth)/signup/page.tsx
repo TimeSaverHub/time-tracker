@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Clock } from 'lucide-react'
+import { auth } from '../../../lib/firebase'
 
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
@@ -34,31 +36,12 @@ export default function SignUpPage() {
     }
 
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-        }),
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Something went wrong')
-      }
-
-      // Redirect to login page after successful signup
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      await updateProfile(userCredential.user, { displayName: name })
       router.push('/login')
     } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message)
-      } else {
-        setError('Something went wrong. Please try again.')
-      }
+      console.error('Signup error:', error)
+      setError('Failed to create account')
     } finally {
       setIsLoading(false)
     }
